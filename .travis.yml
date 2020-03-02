@@ -12,12 +12,12 @@ before_install:
     fi
 
 script:
+  - touch aclocal.m4 configure Makefile.am Makefile.in
   - |
-    touch aclocal.m4 configure Makefile.am Makefile.in
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         ./configure CXX=g++-7
     else
         ./configure
     fi
-    make -j8
-    make check || { cat 'test/test-suite.log' && exit 1; }
+  - make -j8
+  - make check || { cat 'test/test-suite.log' && exit 1; }
