@@ -8,6 +8,7 @@ before_install:
   - sudo apt-get -qy install g++-7 automake autoconf-archive
 
 script:
+  - touch aclocal.m4 configure Makefile.am Makefile.in
   - ./configure CXX=g++-7
   - make -j8
   - make check || { cat 'test/test-suite.log' && exit 1; }
