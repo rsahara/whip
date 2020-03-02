@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.com/rsahara/whip.svg?branch=master)](https://travis-ci.com/rsahara/whip)
-
-# Whip
+# Whip [![Build Status](https://travis-ci.com/rsahara/whip.svg?branch=master)](https://travis-ci.com/rsahara/whip)
 
 A code generator of state machines.
 
