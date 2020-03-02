@@ -1,0 +1,13 @@
+language: C++
+os:
+  - linux
+
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test  
+  - sudo apt-get -qq update
+  - sudo apt-get -qy install g++-7 automake autoconf-archive
+
+script:
+  - ./configure CXX=g++-7
+  - make -j8
+  - make check || { cat 'test/test-suite.log' && exit 1; }
