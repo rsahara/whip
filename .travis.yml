@@ -1,14 +1,23 @@
 language: C++
 os:
   - linux
+  - osx
 
-before_install: |
- sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
- sudo apt-get -qq update
- sudo apt-get -qy install g++-7 automake autoconf-archive
+before_install: 
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get -qq update
+        sudo apt-get -qy install g++-7 automake autoconf-archive
+    fi
 
-script: |
-  touch aclocal.m4 configure Makefile.am Makefile.in
-  ./configure CXX=g++-7
-  make -j8
-  make check || { cat 'test/test-suite.log' && exit 1; }
+script:
+  - |
+    touch aclocal.m4 configure Makefile.am Makefile.in
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+        ./configure CXX=g++-7
+    else
+        ./configure
+    fi
+    make -j8
+    make check || { cat 'test/test-suite.log' && exit 1; }
