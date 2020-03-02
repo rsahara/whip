@@ -1,0 +1,6 @@
+autom4te.cache
+.DS_Store
+xcuserdata
+*~
+build
+bazel-*

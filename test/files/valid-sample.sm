@@ -1,0 +1,43 @@
+%class StateMachine
+%start Intro::SelectLoginMethod
+%enum Page
+
+%map Intro
+%%
+SelectLoginMethod {
+    proceedWithFacebook FacebookLogin::StartFacebook { pushPage(Page.startFacebook) }
+    proceedWithEmail EmailLogin::EnterEmail { pushPage(Page.enterEmail) }
+}
+%%
+
+%map FacebookLogin
+%%
+StartFacebook {
+    proceed LoggedIn::End {}
+    failed Failed { pushPage(Page.failedToLoginWithFacebok) }
+}
+
+Failed {
+    back StartFacebook { popPage() }
+}
+%%
+
+%map EmailLogin
+%%
+EnterEmail {
+    proceed [ needSecondAuthentication() ] SecondAuth { pushPage(Page.secondAuthentication) }
+    proceed [] LoggedIn::End {}
+}
+
+SecondAuth {
+    proceed LoggedIn::End {} 
+}
+%%
+
+%map LoggedIn
+%%
+End
+    Entry { loginFinished() }
+{
+}
+%%

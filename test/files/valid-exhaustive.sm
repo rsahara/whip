@@ -1,0 +1,45 @@
+// Test all types of valid code
+
+%include Header.h
+%class StateMachine
+%package com.package
+%start Map1::Start
+%enum Enum
+
+%map Map1
+%%
+    Start {
+        next Map2::Step1 { goingToStep1(Enum.val1); goingToStep1(); }
+    }
+%%
+
+%map Map2
+%%
+    Step1
+        Entry { step1Entry(); }
+        Exit { step1Exit(); }
+    {
+        next [ctxt.cond1()] Step2 { delegate.triggerStep2(a, b) }
+        next [cond2()] nil { restart(); }
+        next [] nil { doNothing(); doNothing(); doNothing(); }
+        stay nil { }
+    }
+    Step2
+        Entry {}
+        Exit {}
+    {
+    }
+
+    Step3 Entry {} {
+        next [true] nil {}
+        next [a && b || c] nil {}
+        next [(a || b) && c] nil {}
+        next [a > b] nil {}
+        next [a >= b] nil {}
+        next [a < b] nil {}
+        next [a <= b] nil {}
+        next [a == b] nil {}
+        next [a != b] nil {}
+    }
+    Step4 Exit {} {}
+%%

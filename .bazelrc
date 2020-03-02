@@ -1,0 +1,2 @@
+build --cxxopt=-std=gnu++17
+build --cxxopt=-Isrc/lib
