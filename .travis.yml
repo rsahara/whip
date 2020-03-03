@@ -1,4 +1,5 @@
 language: cpp
+os: linux
 
 jobs:
   include:
@@ -16,9 +17,9 @@ jobs:
       os: linux
       dist: bionic
       env:
-    - name: macOS
+    - name: macOS Xcode11.3
       os: osx
-
+      osx_image: xcode11.3
 
 script:
   - touch aclocal.m4 configure Makefile.am Makefile.in
