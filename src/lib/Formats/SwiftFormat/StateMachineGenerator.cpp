@@ -203,6 +203,20 @@ namespace Whip::SwiftFormat {
         }
         output << "}" << std::endl;
 
+        // Event enum: description.
+        output << std::endl;
+        output << "extension " << eventEnumName << ": CustomStringConvertible {" << std::endl;
+        output << indentation(1) << "var description: String {" << std::endl;
+        output << indentation(2) << "switch self {" << std::endl;
+        for (auto it = transitionNameSet.begin(); it != transitionNameSet.end(); it++) {
+            std::string caseName(lowerCamelCaseIdentifier(*it));
+            output << indentation(2) << "case ." << caseName << ":" << std::endl;
+            output << indentation(3) << "return \"" << caseName << "\"" <<  std::endl;
+        }
+        output << indentation(2) << "}" << std::endl;
+        output << indentation(1) << "}" << std::endl;
+        output << "}" << std::endl;
+
         // State enum.
         output << std::endl;
         output << "enum " << stateEnumName << " {" << std::endl;
@@ -211,6 +225,23 @@ namespace Whip::SwiftFormat {
             const State& state = *it;
             output << indentation(1) << "case " << lowerCamelCaseIdentifier(state.name) << std::endl;
         }
+        output << "}" << std::endl;
+
+        // State enum: description.
+        output << std::endl;
+        output << "extension " << stateEnumName << ": CustomStringConvertible {" << std::endl;
+        output << indentation(1) << "var description: String {" << std::endl;
+        output << indentation(2) << "switch self {" << std::endl;
+        output << indentation(2) << "case .invalid:" << std::endl;
+        output << indentation(3) << "return \"invalid\"" << std::endl;
+        for (auto it = document.states.begin(); it != document.states.end(); it++) {
+            const State& state = *it;
+            std::string caseName(lowerCamelCaseIdentifier(state.name));
+            output << indentation(2) << "case ." << caseName << ":" << std::endl;
+            output << indentation(3) << "return \"" << caseName << "\"" <<  std::endl;
+        }
+        output << indentation(2) << "}" << std::endl;
+        output << indentation(1) << "}" << std::endl;
         output << "}" << std::endl;
 
         // State enum: transition function.
