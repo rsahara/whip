@@ -55,16 +55,16 @@ namespace Whip::SwiftFormat {
     }
 
     void PseudoCodeGenerator::writeDelegateWord(const Expression& expression, int expressionID, std::ostream& output) {
-        output << "delegate";
+        output << "implementations";
     }
 
     void PseudoCodeGenerator::writeFunctionCall(const Expression& expression, int expressionID, std::ostream& output) {
         PseudoCodeAccessor& pseudoCodeAccessor = *this->pseudoCodeAccessor;
-        // Add "delegate." if it is a simple function call.
+        // Add the delegate word if it is a simple function call.
         int parentExpressionID = pseudoCodeAccessor.parentExpressionID(expressionID);
         if (parentExpressionID == invalidExpressionID
             || pseudoCodeAccessor.content().expression(parentExpressionID).type != ExpressionType::Scope) {
-            output << "delegate.";
+            output << "implementations.";
         }
         output << expression.value << "(";
     }

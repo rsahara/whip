@@ -21,24 +21,25 @@ namespace Whip::SwiftFormat {
     }
 
     bool StateMachineGenerator::loadDocument() {
-        delegateClassName.clear();
+        implementationsClassName.clear();
         for (auto it = document.metas.begin(); it != document.metas.end(); it++) {
             const MetaData& metaData = *it;
             if (metaData.key == MetaDataKey::defineDelegateClass) {
-                delegateClassName = upperCamelCaseIdentifier(metaData.value + "Impl");
+                implementationsClassName = upperCamelCaseIdentifier(metaData.value + "Impl");
                 stateMachineClassName = upperCamelCaseIdentifier(metaData.value);
                 stateEnumName = upperCamelCaseIdentifier(metaData.value + "State");
                 transitionEnumName = upperCamelCaseIdentifier(metaData.value + "Transition");
                 eventEnumName = upperCamelCaseIdentifier(metaData.value + "Event");
                 errorEnumName = upperCamelCaseIdentifier(metaData.value + "Error");
+                delegateClassName = upperCamelCaseIdentifier(metaData.value + "Delegate");
             }
             else if (metaData.key == MetaDataKey::defineInitialState) {
                 initialStateName = metaData.value;
             }
         }
 
-        if (delegateClassName.empty()) {
-            errorLog() << "delegate class name undetermined." << std::endl;
+        if (implementationsClassName.empty()) {
+            errorLog() << "implementations class name undetermined." << std::endl;
             return false;
         }
 
@@ -129,8 +130,8 @@ namespace Whip::SwiftFormat {
         // State machine class.
         output << "class " << stateMachineClassName << " {" << std::endl;
         output << indentation(1) << "private(set) var currentState: " << stateEnumName << std::endl;
+        output << indentation(1) << "weak var implementations: " << implementationsClassName << "?" << std::endl;
         output << indentation(1) << "weak var delegate: " << delegateClassName << "?" << std::endl;
-        output << indentation(1) << "var errorHandler: ((Error) -> Void)?" << std::endl;
         if (initialStateExists) {
             output << indentation(1) << "static let initialState = " << stateEnumName << "." << lowerCamelCaseIdentifier(initialStateName) << std::endl;
         }
@@ -139,39 +140,53 @@ namespace Whip::SwiftFormat {
         output << indentation(1) << "}" << std::endl;
         output << "}" << std::endl;
         output << std::endl;
-        output << "// Shortcut functions that use the errorHandler." << std::endl;
+
+        // Delegate protocol.
+        output << "// Delegate for customizing some operations of the state machine." << std::endl;
+        output << "protocol RegStateMachineDelegate: AnyObject {" << std::endl;
+        output << indentation(1) << "func handleError(stateMachine: " << stateMachineClassName << ", error: Error)" << std::endl;
+        output << indentation(1) << "func willPerformTransition(stateMachine: " << stateMachineClassName
+            << ", forEvent event: " << eventEnumName << ")" << std::endl;
+        output << "}" << std::endl;
+        output << std::endl;
+
+        // State machine class: functions for sending events.
+        output << "// Functions for sending events." << std::endl;
         output << "extension " << stateMachineClassName << " {" << std::endl;
         if (initialStateExists) {
             output << indentation(1) << "func enterInitialState() { " << std::endl;
             output << indentation(2) << "do { try enterState(" << stateMachineClassName << ".initialState) }" << std::endl;
-            output << indentation(2) << "catch { errorHandler?(error) }" << std::endl;
+            output << indentation(2) << "catch { delegate?.handleError(stateMachine: self, error: error) }" << std::endl;
             output << indentation(1) << "}" << std::endl;
         }
         for (auto it = transitionNameSet.begin(); it != transitionNameSet.end(); it++) {
             output << indentation(1) << "func " << *it << "() {" << std::endl;
             output << indentation(2) << "do { try performTransition(forEvent: ." << *it << ") }" << std::endl;
-            output << indentation(2) << "catch { errorHandler?(error) }" << std::endl;
+            output << indentation(2) << "catch { delegate?.handleError(stateMachine: self, error: error) }" << std::endl;
             output << indentation(1) << "}" << std::endl;
         }
         output << "}" << std::endl;
         output << std::endl;
+
+        // State machine class: basic functions.
         output << "extension " << stateMachineClassName << " {" << std::endl;
         output << indentation(1) << "func exitState() throws {" << std::endl;
-        output << indentation(2) << "if let delegate = delegate {" << std::endl;
-        output << indentation(3) << "try currentState.exit(delegate: delegate)" << std::endl;
+        output << indentation(2) << "if let implementations = implementations {" << std::endl;
+        output << indentation(3) << "try currentState.exit(implementations: implementations)" << std::endl;
         output << indentation(2) << "}" << std::endl;
         output << indentation(2) << "currentState = .invalid" << std::endl;
         output << indentation(1) << "}" << std::endl;
         output << indentation(1) << "func enterState(_ state: " << stateEnumName << ") throws {" << std::endl;
         output << indentation(2) << "currentState = state" << std::endl;
-        output << indentation(2) << "if let delegate = delegate {" << std::endl;
-        output << indentation(3) << "try currentState.enter(delegate: delegate)" << std::endl;
+        output << indentation(2) << "if let implementations = implementations {" << std::endl;
+        output << indentation(3) << "try currentState.enter(implementations: implementations)" << std::endl;
         output << indentation(2) << "}" << std::endl;
         output << indentation(1) << "}" << std::endl;
         output << indentation(1) << "func performTransition(forEvent event: " << eventEnumName << ") throws {" << std::endl;
-        output << indentation(2) << "guard let delegate = delegate else { return }" << std::endl;
+        output << indentation(2) << "guard let implementations = implementations else { return }" << std::endl;
+        output << indentation(2) << "delegate?.willPerformTransition(stateMachine: self, forEvent: event)" << std::endl;
         output << indentation(2) << "let state = currentState" << std::endl;
-        output << indentation(2) << "let transition = state.transition(forEvent: event, delegate: delegate)" << std::endl;
+        output << indentation(2) << "let transition = state.transition(forEvent: event, implementations: implementations)" << std::endl;
         output << indentation(2) << "switch transition {" << std::endl;
         output << indentation(2) << "case .undefined:" << std::endl;
         output << indentation(3) << "throw " << errorEnumName << ".undefinedTransition(state: state, event: event)" << std::endl;
@@ -247,9 +262,9 @@ namespace Whip::SwiftFormat {
         // State enum: transition function.
         output << std::endl;
         output << "extension " << stateEnumName << " {" << std::endl;
-        output << indentation(1) << "func transition(" << std::endl;
+        output << indentation(1) << "fileprivate func transition(" << std::endl;
         output << indentation(2) << "forEvent event: " << eventEnumName << "," << std::endl;
-        output << indentation(2) << "delegate: " << delegateClassName << std::endl;
+        output << indentation(2) << "implementations: " << implementationsClassName << std::endl;
         output << indentation(1) << ") -> " << transitionEnumName << " {" << std::endl;
         output << indentation(2) << "switch (self, event) {" << std::endl;
         for (auto it = document.states.begin(); it != document.states.end(); it++) {
@@ -265,7 +280,7 @@ namespace Whip::SwiftFormat {
 
         // State enum: enter function.
         output << std::endl;
-        output << indentation(1) << "func enter(delegate: " << delegateClassName << ") throws {" << std::endl;
+        output << indentation(1) << "fileprivate func enter(implementations: " << implementationsClassName << ") throws {" << std::endl;
         output << indentation(2) << "switch self {" << std::endl;
         output << indentation(2) << "case .invalid: break" << std::endl;
         for (auto it = document.states.begin(); it != document.states.end(); it++) {
@@ -285,7 +300,7 @@ namespace Whip::SwiftFormat {
 
         // State: exit function.
         output << std::endl;
-        output << indentation(1) << "func exit(delegate: " << delegateClassName << ") throws {" << std::endl;
+        output << indentation(1) << "fileprivate func exit(implementations: " << implementationsClassName << ") throws {" << std::endl;
         output << indentation(2) << "switch self {" << std::endl;
         output << indentation(2) << "case .invalid: break" << std::endl;
         for (auto it = document.states.begin(); it != document.states.end(); it++) {
@@ -306,7 +321,7 @@ namespace Whip::SwiftFormat {
 
         // Transition enum.
         output << std::endl;
-        output << "enum " << transitionEnumName << " {" << std::endl;
+        output << "fileprivate enum " << transitionEnumName << " {" << std::endl;
         output << indentation(1) << "case undefined" << std::endl;
         output << indentation(1) << "case doNothing" << std::endl;
         output << indentation(1) << "case execute(body: () throws -> Void)" << std::endl;

@@ -34,8 +34,10 @@ namespace Whip::SwiftFormat {
         void generateCode();
 
     private:
-        /// Class name of the delegate that implements function calls found in pseudo codes associated with transitions and conditions.
+        /// Name of the class that implements the functions called in pseudo codes (associated with transitions and conditions).
         /// The name is generated using the meta data.
+        std::string implementationsClassName;
+        /// Name of the class representing a delegate of the state machine, generated using the meta data.
         std::string delegateClassName;
         /// Name of the class representing the state machine, generated using the meta data.
         std::string stateMachineClassName;
