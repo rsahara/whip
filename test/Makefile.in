@@ -541,12 +541,16 @@ SH_LOG_COMPILER = $(SHELL)
 AM_SH_LOG_FLAGS = -vex
 INPUT_FILES = \
     files/valid-exhaustive.sm \
-    files/valid-sample.sm
+    files/valid-sample.sm \
+    files/swift/valid-sample/Package.swift \
+    files/swift/valid-sample/Sources \
+    files/swift/valid-sample.expected-out
 
 SCRIPT_FILES = \
     test-usage.sh \
     test-valid-input.sh \
-    test-text-features.sh
+    test-text-features.sh \
+    test-valid-sample-swift.sh
 
 EXTRA_DIST = $(INPUT_FILES) $(SCRIPT_FILES)
 TESTS = $(SCRIPT_FILES)
