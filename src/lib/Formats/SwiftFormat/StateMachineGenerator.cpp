@@ -143,7 +143,7 @@ namespace Whip::SwiftFormat {
 
         // Delegate protocol.
         output << "// Delegate for customizing some operations of the state machine." << std::endl;
-        output << "protocol RegStateMachineDelegate: AnyObject {" << std::endl;
+        output << "protocol " << delegateClassName << ": AnyObject {" << std::endl;
         output << indentation(1) << "func handleError(stateMachine: " << stateMachineClassName << ", error: Error)" << std::endl;
         output << indentation(1) << "func willPerformTransition(stateMachine: " << stateMachineClassName
             << ", forEvent event: " << eventEnumName << ")" << std::endl;
