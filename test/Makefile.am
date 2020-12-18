@@ -25,14 +25,14 @@ TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 AM_SH_LOG_FLAGS = -vex
 
-TESTDATA = \
+INPUT_FILES = \
     files/valid-exhaustive.sm \
     files/valid-sample.sm
 
-TESTSCRIPTS = \
+SCRIPT_FILES = \
     test-usage.sh \
     test-valid-input.sh \
     test-text-features.sh
 
-EXTRA_DIST = $(TESTDATA) $(TESTSCRIPTS)
-TESTS = $(TESTSCRIPTS)
+EXTRA_DIST = $(INPUT_FILES) $(SCRIPT_FILES)
+TESTS = $(SCRIPT_FILES)
