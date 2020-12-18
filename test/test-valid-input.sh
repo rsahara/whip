@@ -2,8 +2,7 @@
 
 [ -x "$PROGRAM_PATH" ]
 
-TMP_PATH=$(mktemp -d "$TEST_PATH/test-valid-input.XXXXXX")
-mkdir -p "$TMP_PATH"
+TMP_PATH=$(mktemp -d)
 
 for INPUT_FILE_PATH in "$TEST_PATH"/files/valid-*.sm; {
     "$PROGRAM_PATH" --format=swift --dir="$TMP_PATH" "$INPUT_FILE_PATH"
