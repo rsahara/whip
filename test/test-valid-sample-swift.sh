@@ -1,6 +1,9 @@
 #!/bin/sh -xe
 
 [ -x "$PROGRAM_PATH" ]
+
+command -v swift > /dev/null || { echo "Swift is required to run this test."; exit 77; }
+
 TMP_PATH=$(mktemp -d)
 INPUT_FILE_PATH="$TEST_PATH/files/valid-sample.sm"
 
