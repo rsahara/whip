@@ -1,5 +1,5 @@
 AC_INIT([whip], [1.0], [contact@runo.jp])
-AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_AUX_DIR([aux-config])
 AC_CONFIG_SRCDIR([configure.h.in])
